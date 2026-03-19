@@ -1,1 +1,66 @@
-[]
+[
+    {
+        "id": 1,
+        "name": "Rochester Institute of Technology",
+        "latitude": 43.083672,
+        "longitude": -77.678832,
+        "description": "Where everybody's favorite class takes place™.",
+        "photos": [],
+        "metadata":
+        {
+            "addedAt": "2025-03-10T22:39:26Z"
+        }
+    },
+
+    {
+        "id": 2,
+        "name": "Strong National Museum of Play",
+        "latitude": 43.152470,
+        "longitude": -77.601509,
+        "description": "Endless amounts of fun!",
+        "photos": [],
+        "metadata":
+        {
+            "addedAt": "2025-03-12T15:17:51Z"
+        }
+    },
+
+    {
+        "id": 3,
+        "name": "The White House",
+        "latitude": 38.897663,
+        "longitude": -77.036575,
+        "description": "Who knows what's happening there.",
+        "photos": [],
+        "metadata":
+        {
+            "addedAt": "2025-03-12T15:22:09Z"
+        }
+    },
+
+    {
+        "id": 4,
+        "name": "The Statue of Liberty",
+        "latitude": 40.6892,
+        "longitude": -74.0445,
+        "description": "I remember this being more brownish.",
+        "photos": [],
+        "metadata":
+        {
+            "addedAt": "2025-03-12T15:22:09Z"
+        }
+    },
+
+    {
+        "id": 5,
+        "name": "Seneca Park Zoo",
+        "latitude": 43.208279,
+        "longitude": -77.62210,
+        "description": "They have two snow leopards there.",
+        "photos": [],
+        "metadata":
+        {
+            "addedAt": "2025-03-12T16:16:14Z"
+        }
+    }
+]

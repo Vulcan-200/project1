@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>(LS) - Locations</title>
+    <link rel="stylesheet" href="style.css">
+
+        <!-- Montserrat Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <div id="page-title">
+        <h1>Location Station Documentation</h1>
+        <p>The place to see how places are placed</p>
+    </div>
+
+    <!-- Top Navigation Bar -->
+    <nav class="top-nav">
+        <a href="/index.html">Home</a>
+        <a href="/locations.html">Locations</a>
+        <a href="/api-doc.html">API Docs</a>
+    </nav>
+
+    <main id="api-docs-main">
+
+        <h1>Location Station Map</h1>
+        <p>Welcome to Location Station! Here locations are stored only using their associated latitude and longitude.</p>
+        <br>
+        <p>On the map, you can click any place to create a waypoint. Click this waypoint once more to see it's latitude and longitude. If you so desire, you may add this location to the API, by giving it a name (required) and a description (optional) after clicking the "Add Location" button. </p>
+        <br>
+        <p>You can search for locations by name in the sidebar in the homepage. You can also add a location at the bottom of the sidebar, but you will have to manually input the latitude and longitude of your desired location.</p>
+        <br>
+        <p>You can see a list of all locations in the "Locations" page. Here you can also edit locations to change their name, latitude, longitude and/or description, by clicking on the location's "Edit Location" button.</p>
+
+        <div id="api-docs-background">
+            <h2>Endpoints Overview</h2>
+            <table>
+                <tr>
+                    <th>Method</th>
+                    <th>Endpoints</th>
+                    <th>Description</th>
+                </tr>
+                <!-- GET /api/locations-->
+                <tr>
+                    <td><span class="method get">GET</span><br><span class="method head">HEAD</span></td>
+                    <td>/api/locations</td>
+                    <td>
+                        Returns all saved locations.<br>
+                        Can filter locations using query parameters<br>
+                        <strong>?search=</strong> filter by name<br>
+                        <strong>?sort=alpha</strong> sort alphabetically
+                    </td>
+                </tr>
+
+                <!-- GET /api/locations/(id) -->
+                <tr>
+                    <td><span class="method get">GET</span><br><span class="method head">HEAD</span></td>
+                    <td>/api/locations/(id)</td>
+                    <td>Returns a single location by its ID.</td>
+                </tr>
+
+                <!-- GET /api/locationNames -->
+                <tr>
+                    <td><span class="method get">GET</span><br><span class="method head">HEAD</span></td>
+                    <td>/api/locationNames</td>
+                    <td>Returns an array of all location names.</td>
+                </tr>
+
+                <!-- GET /api/randomLocation -->
+                <tr>
+                    <td><span class="method get">GET</span><br><span class="method head">HEAD</span></td>
+                    <td>/api/randomLocation</td>
+                    <td>
+                        Redirects (302) to the location with the randomly generated id.<br>
+                        HEAD returns the redirect headers without actually following the redirect.
+                    </td>
+                </tr>
+
+                <!-- POST /api/locations -->
+                <tr>
+                    <td><span class="method post">POST</span></td>
+                    <td>/api/locations</td>
+                    <td>
+                        Adds a new location.<br>
+                        Accepts <strong>JSON</strong> or <strong>x-www-form-urlencoded</strong>.<br>
+                        Required fields:<br>
+                        <strong>name</strong> (string)<br>
+                        <strong>latitude</strong> (number)<br>
+                        <strong>longitude</strong> (number)<br>
+                        Optional:<br>
+                        <strong>description</strong> (string)
+                    </td>
+                </tr>
+
+                <!-- POST /api/locations/:id -->
+                <tr>
+                    <td><span class="method post">POST</span></td>
+                    <td>/api/locations/(id)</td>
+                    <td>
+                        Updates an existing location.<br>
+                        Accepts <strong>JSON</strong> or <strong>x-www-form-urlencoded</strong>.<br>
+                        Updatable fields:<br>
+                        <strong>name</strong>, <strong>latitude</strong>, <strong>longitude</strong>, <strong>description</strong>(optional)<br>
+                        Returns <strong>204</strong> on success.
+                    </td>
+                </tr>
+
+                <!-- 404 -->
+                <tr>
+                    <td><span class="method get">GET</span><br><span class="method head">HEAD</span><br><span class="method post">POST</span></td>
+                    <td>All other endpoints</td>
+                    <td>Returns <strong>404</strong>.</td>
+                </tr>
+            </table>
+
+            <br>
+            <div id="final-submission-questions">
+                <h1>Final Submission Questions</h1>
+                <br>
+                <h2>What dataset are you using?</h2>
+                <p>I decided to use my own dataset. Though very limited in number and a bit barebones in data for each object, I had to use a custom one since my project was very unique. I made sure that the data that was stored has a nested data, specifically the date and time that the locations were created. This project is meant to be more like a sandbox, where users can explore the map and add their locations, as opposed to something that would be used as a reference.</p>
+                <br>
+                <br>
+                <h2>What went right in the development of this project?</h2>
+                <p>Specifically the modals that I created were smooth and are easy for users to interact with. Since I was using mapbox, their documentation (<a href="https://docs.mapbox.com/">https://docs.mapbox.com</a>) was really easy to follow and understand. Custom styling for the map as well as 3D visualization of buildings did not take as long as I originally anticipated to implement.</p>
+                <br>
+                <br>
+                <h2>What went wrong in the development of this project?</h2>
+                <p>Many things went wrong in this project. Apart from the extremely late submission due to sickness and other assignments in different classes, I've come to realize an important problem that I have. Though this is more of a personal issue, I tend to have a problem where I overscope a project too far. I think of too many features and at some point it becomes a heavy burden. But I couldn't back out anymore, not after all the effort I already put in. This has been a recurring issue for some time. Regardless, I am both proud and dissapointed in myself, proud that I was able to pull through and actually complete this assignement, since it look a lot of time and a lot of struggle. On the other hand, I am dissapointed that I wasn't able to complete it on time.</p>
+                <br>
+                <br>
+                <h2>What did you learn while developing this project?</h2>
+                <p>I've learned many things, code wise, personal wise and design wise. When it comes to code, I would say I've more familiarized myself with the code. Practice is king and after looking over many areas of code and finding bugs, understanding what data goes where and how it's handled, I would say I've become much more proficient. Personal wise, I've learned that it's best to start small and build from there. I definetely went overboard with the amount of time I spent not just writing code, but also debug logs and style management using the inspector. Design wise, modals were a fun thing to cover and I will definitely be doing more of them in the future, but I really want to learn more about handlebars to make designs even easier.</p>
+                <br>
+                <br>
+                <h2>If you went above and beyond, how did you do so?</h2>
+                <p>As mentioned before, I overscoped the hell out of this project. I'm particularly proud of the level of style and pizzaz that my webpage has to offer, but the fact that users can interact with a map in the first place I believe takes the cake. This makes my webpage feel less like an API and more like a dynamic, interactable piece of software. Though the level of responsiveness is limited and I was never able to implement the delete buttons for each location in the location.html page, the functionality that is currently present, at least in my opinion, is still impressive.</p>
+                <br>
+                <br>
+                <h2>If you used any borrowed code or code fragments, where did you get them from? What do the code fragments do? Where are they in your code?</h2>
+                <p>Mapbox is the main star of my project. I used it not only to visualize the locations, but also created a way to add locations using it. I relied on the documentation as mentioned earlier, using many code fragments, which can be found in the index.html <"script"> tag, near the beginning. This includes setting specific colors for different roads, parks, landmarks, etc., but also things like setting zoom, flyto, layers and clicking mechanics all come from the mapbox documentation. All other code was written by me.</p>
+                <br>
+                <br>
+                <h3>Developed by - Mark Starovoytov</h3>
+                <h4>March 12th 2026</h4>
+            </div>
+        </div>
+    </main>
+    
+</body>
+</html>

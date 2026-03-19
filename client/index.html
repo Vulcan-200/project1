@@ -5,38 +5,502 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Project 1 API</title>
     <link rel="stylesheet" href="style.css">
+
+    <!-- Montserrat Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+    <!-- Mapbox -->
+    <!-- Mapbox CSS -->
+    <link href="https://api.mapbox.com/mapbox-gl-js/v3.0.1/mapbox-gl.css" rel="stylesheet">
+
+    <!-- Mapbox JS -->
+    <script src="https://api.mapbox.com/mapbox-gl-js/v3.0.1/mapbox-gl.js"></script>
 </head>
 <body>
     
-    <h1>Project 1 API</h1>
-    <p>This page loads items from your API.</p>
+    <header id="header-bar">
 
-    <div id="items"></div>
+        <!-- Logo and Motto -->
+        <div id="page-title">
+            <h1>Location Station</h1>
+            <p>The place to place places</p>
+        </div>
+    
+        <!-- Top Navigation Bar -->
+        <nav class="top-nav">
+            <a href="/index.html">Home</a>
+            <a href="/locations.html">Locations</a>
+            <a href="/api-doc.html">API Docs</a>
+        </nav>
 
-    <h2>Add a New Item</h2>
-    <form id="addForm">
-        <input type="text", id="itemName" placeholder="Item name">
-        <button type="submit">Add</button>
-    </form>
+    </header>
+
+    <div id="screen">
+
+        <!-- Content Area (Location List & Map)-->
+         <div id="content">
+            <aside id="sidebar">
+            <input type="text" id="location-searchbar" placeholder="Search locations">
+            <div id="location-list"></div>
+
+            <button id="add-location-btn" class="btn">Add Location</button>
+        </aside>
+
+        <div id="map"></div>
+        </div>
+    </div>
+
+    <div id="add-location-modal">
+        <div id="modal-content">
+            <h2>Add Location</h2>
+
+            <input type="text" id="modal-name" placeholder="Name">
+            <input type="text" id="modal-lat" placeholder="Latitude">
+            <input type="text" id="modal-long" placeholder="Longitude">
+            <input type="text" id="modal-desc" placeholder="Description">
+
+            <button id="modal-submit-btn" class="btn">Submit</button>
+            <button id="modal-cancel-btn" class="btn">Cancel</button>
+        </div>
+    </div>
 
     <script> 
-        document.querySelector("#addForm").addEventListener("submit", async (e) => 
-        { 
-            e.preventDefault(); 
-            
-            const name = document.querySelector("#itemName").value;
-            
-            await fetch("/api/items", 
-            { 
-                method: "POST", 
-                headers: 
-                    { "Content-Type": "application/json" },
-                body: JSON.stringify({ name }) 
-            }); 
+        mapboxgl.accessToken = "pk.eyJ1IjoidnVsY2FuLTIwMCIsImEiOiJjbWlwNTExNzEwOW1mM2tvdmhhNXk0dm1nIn0.3DNMykIIU6Fk5XU0BjwLQw";
+        
+        let allLocations = [];
+        let wayPoint = null;
+        let activePopup = null;
 
-            document.querySelector("itemName").value = ""; // clear input
-            loadItems(); // refreshes the list
+        const map = new mapboxgl.Map(
+            {
+                container: "map",
+                style: "mapbox://styles/mapbox/streets-v12",
+                center: [-77.6109, 43.1610],
+                zoom: 12
+            }
+        );
+
+        map.on("load", () =>
+        {
+            // Apply colors
+            map.setPaintProperty("water", "fill-color", "#022F40");
+            map.setPaintProperty("land", "background-color", "#38AECC");
+            map.setPaintProperty("landuse", "fill-color", "#A2E8DD");
+            map.setPaintProperty("building", "fill-color", "#6F5060");
+            map.setPaintProperty("aeroway-polygon", "fill-color", "#779CAB");
+
+            // Roads
+            const roadLayers =
+            [
+                "road-minor",
+                "road-street",
+                "road-primary",
+                "road-secondary-tertiary",
+                "road-major",
+                "road-motorway-trunk",
+                "road-path",
+                "road-service",
+                "road-link"
+            ];
+
+            const roadCasingLayers = 
+            [
+                "road-minor-case",
+                "road-street-case",
+                "road-primary-case",
+                "road-secondary-tertiary-case",
+                "road-major-case",
+                "road-motorway-trunk-case"
+            ];
+
+            roadLayers.forEach(id =>
+            {
+                if (map.getLayer(id))
+                {
+                    map.setPaintProperty(id, "line-color", "#0090C1");
+                }
+            });
+
+            roadCasingLayers.forEach(id =>
+            {
+                if (map.getLayer(id))
+                {
+                    map.setPaintProperty(id, "line-color", "#000000");
+                }
+            });
+
+            // Add 3D buildings
+            const layers = map.getStyle().layers;
+            let labelLayerId;
+            for (const layer of layers)
+            {
+                if (layer.type === "symbol" && layer.layout["text-field"])
+                {
+                    labelLayerId = layer.id;
+                    break;
+                }
+            }
+
+            map.addLayer
+            (
+                {
+                    id: "3d-buildings",
+                    source: "composite", "source-layer": "building",
+                    filter: ["==", "extrude", "true"],
+                    type: "fill-extrusion",
+                    minzoom: 12,
+                    paint: 
+                    {
+                        "fill-extrusion-color": "#6F5060",
+                        "fill-extrusion-height":
+                        [
+                            "interpolate",
+                            ["linear"],
+                            ["zoom"],
+                            12, 0,
+                            12.05, ["get", "height"]
+                        ],
+                        "fill-extrusion-base":
+                        [
+                            "interpolate",
+                            ["linear"],
+                            ["zoom"],
+                            12, 0,
+                            12.05, ["get", "min_height"]
+                        ],
+                    }
+                },
+                labelLayerId
+            );
         });
+
+        map.on("dragstart", () =>
+        {
+            isDragging = true;
+        })
+
+        map.on("mousedown", () =>
+        {
+            isDragging = false;
+        });
+
+        map.on("click", (e) =>
+        {
+            if (isDragging)
+            {
+                return;
+            }
+
+            const {lng, lat} = e.lngLat;
+
+            if (wayPoint)
+            {
+                const wayPointLocation = wayPoint.getLngLat();
+
+                const clickedSameSpot = Math.abs(wayPointLocation.lng - lng) < 0.001 && Math.abs(wayPointLocation.lat - lat) < 0.001;
+
+                if (!clickedSameSpot)
+                {
+                    wayPoint.remove();
+                }
+            }
+
+            // Create waypoint
+            wayPoint = new mapboxgl.Marker({ color: "#F0A202"})
+            .setLngLat([lng, lat])
+            .addTo(map);
+
+            // Click event listener to waypoint
+            wayPoint.getElement().addEventListener("click", () =>
+            {
+                event.stopPropagation();
+
+                closeAllPopups();
+
+               const { lng, lat } = wayPoint.getLngLat();
+
+               const popup = new mapboxgl.Popup({ offset: 25 })
+                        .setHTML(
+                            `
+                            <div class="waypoint-popup">
+                                <div class="coords-row">
+                                    <p><strong>Lat:</strong> ${lat.toFixed(4)}</p>
+                                    <p><strong>Long:</strong> ${lng.toFixed(4)}</p>
+                                </div>
+                                <button id="add-waypoint-btn" class="btn">Add Location</button>
+                            </div>
+                        `);
+
+                    wayPoint.setPopup(popup).togglePopup();
+            });
+        });
+
+        // Event Listeners
+
+        // Open "Add Location" modal
+        document.querySelector("#add-location-btn").addEventListener("click", async (e) => 
+        { 
+            document.querySelector("#add-location-modal").style.display = "flex";
+        });
+
+        // Close "Add Location" modal
+        document.querySelector("#modal-cancel-btn").addEventListener("click", () => 
+        {
+            document.querySelector("#add-location-modal").style.display = "none";    
+        });
+
+        // Search for Added Locations
+        document.querySelector("#location-searchbar").addEventListener("input", (e) =>
+        {
+            const query = e.target.value.toLowerCase();
+            filterLocations(query);
+        });
+
+        // Add Locations from the waypoint add button
+        document.addEventListener("click", (event) =>
+        {
+            if (event.target && event.target.id === "add-waypoint-btn")
+            {
+                const { lng, lat } = wayPoint.getLngLat();
+
+                document.querySelector("#modal-lat").value = lat.toFixed(4);
+                document.querySelector("#modal-long").value = lng.toFixed(4);
+
+                document.querySelector("#add-location-modal").style.display = "flex";
+            }
+        });
+
+        // Closes popups if clicked elsewhere
+        document.addEventListener("click", (event) =>
+        {
+            if (event.target.closest(".mapboxgl-popup"))
+            {
+                return;
+            }
+
+            closeAllPopups();
+        });
+
+        // Submit "added location"
+        document.querySelector("#modal-submit-btn").addEventListener("click", async () =>
+        {
+            const name = document.querySelector("#modal-name").value.trim();
+            const lat = parseFloat(document.querySelector("#modal-lat").value);
+            const lng = parseFloat(document.querySelector("#modal-long").value);
+            const desc = document.querySelector("#modal-desc").value.trim();
+
+            if (!name || isNaN(lat) || isNaN(lng))
+            {
+                console.log(name);
+                console.log(lat);
+                console.log(lng);
+                alert("Please enter a valid name and coordinates for your location");
+                return;
+            }
+
+            const newLocation = 
+            {
+                name,
+                latitude:lat,
+                longitude: lng,
+                description: desc
+            };
+
+            await fetch("api/locations", 
+            {
+                method: "POST",
+                headers: 
+                { 
+                    "Content-Type": "application/json",
+                    "Accept": "application/json"
+                },
+                body: JSON.stringify(newLocation)
+            });
+
+            // Close modal
+            document.querySelector("#add-location-modal").style.display = "none";
+
+            // Clear fields
+            document.querySelector("#modal-name").value = "";
+            document.querySelector("#modal-lat").value = "";
+            document.querySelector("#modal-long").value = "";
+            document.querySelector("#modal-desc").value = "";
+
+            // Reload sidebar
+            loadLocations();
+
+        });
+
+        // Load from API to get all locations from "/data/dataset.json"
+        async function loadLocations()
+        {
+            const loadedLocations = await fetch("api/locations", 
+            {
+                headers: { "Accept": "application/json" }
+            });
+
+            allLocations = await loadedLocations.json();
+            renderLocations(allLocations);
+
+            const params = new URLSearchParams(window.location.search);
+            const targetID = params.get("loc");
+
+            if (targetID)
+            {
+                jumpToLocation(targetID);
+            }
+        }
+
+        function jumpToLocation(id)
+        {
+            const loc = allLocations.find(l => l.id == id);
+            if (!loc)
+            {
+                return;
+            }
+
+            // fly map to location
+            map.flyTo(
+                {
+                    center: [loc.longitude, loc.latitude],
+                    zoom: 16,
+                    essential: true
+                });
+            
+            // Expand sidebar card
+            const card = document.querySelector(`[data-id="${id}"]`);
+            if (card)
+            {
+                const details = card.querySelector(".location-details");
+                details.style.display = "block";
+
+                // scroll into view
+                card.scrollIntoView({ behavior: "smooth", block: "center"});
+            }
+        }
+
+        function closeAllPopups()
+        {
+            document.querySelectorAll(".mapboxgl-popup").forEach(popup => popup.remove());
+        }
+
+        function filterLocations(query)
+        {
+            const filteredLocations = allLocations.filter(location =>
+                location.name.toLowerCase().includes(query)
+            );
+
+            renderLocations(filteredLocations);
+        }
+
+        // Create "cards" for each location to be displayed in the sidebar
+        function renderLocations(locations)
+        {
+            const list = document.querySelector("#location-list");
+            list.innerHTML = "";
+
+            locations.forEach(location =>
+            {
+                const card = document.createElement("div");
+                card.className = "location-card";
+                card.dataset.id = location.id;
+
+                card.innerHTML = 
+                `
+                    <div class="location-header">
+                        <div class="location-title">${location.name}</div>
+                        <div class="location-date">${new Date(location.metadata.addedAt).toLocaleString()}</div>
+                    </div>
+
+                    <div class="location-description">
+                        <p><strong>Description:</strong> ${location.description || "None"}</p>
+                        <p><strong>Latitude:</strong> ${location.latitude}</p>
+                        <p><strong>Longitude:</strong> ${location.longitude}</p>
+                    </div>
+                `;
+
+                // Marker
+                const locationWayPoint = new mapboxgl.Marker({ color: "#F0A202" })
+                    .setLngLat([location.longitude, location.latitude])
+                    .addTo(map);
+
+                locationWayPoint.getElement().addEventListener("click", (event) =>
+                {
+                    event.stopPropagation();
+
+                    closeAllPopups();
+
+                    const popup = new mapboxgl.Popup({ offset: 25 })
+                    .setHTML(
+                        `
+                        <div class="waypoint-popup">
+                            <h3 class="popup-title">${location.name || "Waypoint"}</h3>
+
+                                <div class="coords-row">
+                                    <p><strong>Lat:</strong> ${location.latitude.toFixed(4)}</p>
+                                    <p><strong>Long:</strong> ${location.longitude.toFixed(4)}</p>
+                                </div>
+                        </div>
+                    `);
+
+                    locationWayPoint.setPopup(popup).togglePopup();
+
+                    const details = card.querySelector(".location-description");
+                    
+                    document.querySelectorAll(".location-description").forEach(description =>
+                    {
+                        if (description !== details)
+                        {
+                            description.style.display = "none";
+                        }
+                    });
+
+                    details.style.display = "block";
+
+                })
+
+                // Expanding/Collapsing cards & setting map location
+                card.addEventListener("click", () =>
+                {
+                    const details = card.querySelector(".location-description");
+
+                    const isOpen = details.style.display === "block";
+
+                    // Collapse other cards
+                    document.querySelectorAll(".location-description").forEach(description =>
+                    {
+                        if (description !== details)
+                        {
+                            description.style.display = "none";
+                        }
+                    });
+
+                    if (!isOpen)
+                    {
+                        details.style.display = "block";
+
+                        // Puts the camera to the longitude and latitude of the location
+                        map.flyTo(
+                        {
+                            center: [location.longitude, location.latitude],
+                            zoom: 16,
+                            speed: 0.8
+                        })
+                    }
+                    else
+                    {
+                        details.style.display = "none";
+                    }
+                
+                    
+                });
+
+                list.appendChild(card);
+            });
+        }
+
+        loadLocations();
+
     </script>
 </body>
 </html>

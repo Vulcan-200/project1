@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>(LS) - Locations</title>
+    <link rel="stylesheet" href="style.css">
+
+    <!-- Montserrat Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <nav class="top-nav">
+        <a href="/index.html">Home</a>
+        <a href="/locations.html">Locations</a>
+        <a href="/api-doc.html">API Docs</a>
+    </nav>
+
+    <header id="locations-header">
+        <h1 id="locations-title">All Locations</h1>
+    </header>
+
+    <main id="locations-main">
+            <input type="text" id="locations-searchbar" placeholder="Search locations...">
+            <div id="locations-list"></div>
+    </main>
+
+    <div id="update-location-modal">
+        <div id="modal-content">
+            <h2>Update Location</h2>
+
+            <input type="text" id="modal-name" placeholder="Name">
+            <input type="text" id="modal-lat" placeholder="Latitude">
+            <input type="text" id="modal-long" placeholder="Longitude">
+            <input type="text" id="modal-desc" placeholder="Description">
+
+            <button id="modal-update-btn" class="btn">Update</button>
+            <button id="modal-cancel-btn" class="btn">Cancel</button>
+        </div>
+    </div>
+    
+<script src="/src/locations.js"></script>
+</body>
+</html>
